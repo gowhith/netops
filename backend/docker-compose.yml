@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: netops-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-netops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-netops}
+      POSTGRES_DB: ${POSTGRES_DB:-netops}
+    ports:
+      # Host 5433 -> container 5432 (5432 left free for Altrion's Postgres).
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/00_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netops}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: netops-redis
+    ports:
+      # Host 6380 -> container 6379 (6379 left free for Altrion's Redis).
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    container_name: netops-api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-netops}:${POSTGRES_PASSWORD:-netops}@postgres:5432/${POSTGRES_DB:-netops}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      # Host 8020 -> container 8000 (AgriPipeline took 8010; Altrion uses 8000-8007).
+      - "8020:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    container_name: netops-worker
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-netops}:${POSTGRES_PASSWORD:-netops}@postgres:5432/${POSTGRES_DB:-netops}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+    command: python -m app.workers.telemetry_consumer
+
+  simulator:
+    build: .
+    container_name: netops-simulator
+    env_file: .env
+    environment:
+      SIM_API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_started
+    command: python -m simulator.device_simulator
+
+volumes:
+  postgres_data:

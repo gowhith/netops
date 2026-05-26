@@ -1,0 +1,46 @@
+# Secrets / env
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+credentials*
+*_api_key
+*_api_key.pub
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.vite/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# DBs / data
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs
+*.log
+logs/
