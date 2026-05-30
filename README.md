@@ -39,6 +39,27 @@ POST /api/telemetry  ──►  Redis Stream (telemetry:events)
 
 ---
 
+## Screenshots
+
+Live product screens captured from the running NetOps AI stack.
+
+### Overview dashboard
+
+![NetOps AI overview dashboard](docs/screenshots/netops-dashboard.png)
+
+### Alerts, device drill-down, automation, and operator guide
+
+<p align="center">
+  <img src="docs/screenshots/netops-alerts.png" alt="NetOps AI real-time alerts view" width="49%" />
+  <img src="docs/screenshots/netops-device-detail.png" alt="NetOps AI device detail view" width="49%" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/netops-automation.png" alt="NetOps AI automation workflow view" width="49%" />
+  <img src="docs/screenshots/netops-guide-modal.png" alt="NetOps AI operator guide modal" width="49%" />
+</p>
+
+---
+
 ## Features
 
 ### Monitoring
